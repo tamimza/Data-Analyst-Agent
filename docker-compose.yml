@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  python-analysis:
+    container_name: python-analysis-container
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    volumes:
+      # Mount uploads directory for file access
+      - ./uploads:/app/uploads
+    networks:
+      - ai-data-agent-network
+    restart: unless-stopped
+    # Keep container running
+    stdin_open: true
+    tty: true
+
+networks:
+  ai-data-agent-network:
+    driver: bridge
