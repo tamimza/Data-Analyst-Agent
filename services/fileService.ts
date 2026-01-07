@@ -113,6 +113,26 @@ export async function deleteFile(storedName: string): Promise<void> {
 }
 
 /**
+ * Deletes a file by its UUID (finds the file with that UUID prefix)
+ */
+export async function deleteFileById(fileId: string): Promise<void> {
+  await ensureUploadsDir();
+
+  try {
+    const files = await fs.readdir(UPLOADS_DIR);
+    const fileToDelete = files.find(file => file.startsWith(fileId));
+
+    if (fileToDelete) {
+      const filePath = path.join(UPLOADS_DIR, fileToDelete);
+      await fs.unlink(filePath);
+    }
+  } catch (error) {
+    console.error(`Failed to delete file with ID ${fileId}:`, error);
+    // Don't throw error - file might already be deleted
+  }
+}
+
+/**
  * Cleans up old files (older than specified hours)
  */
 export async function cleanupOldFiles(hoursOld: number = 24): Promise<number> {

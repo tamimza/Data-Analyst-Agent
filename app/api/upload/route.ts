@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateFile, saveFile } from '@/services/fileService';
+import { validateFile, saveFile, deleteFileById } from '@/services/fileService';
 import { handleApiError } from '@/lib/utils';
 import { FileUploadResponse } from '@/types/file';
 
@@ -12,6 +12,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<FileUploa
     // Get form data from request
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
+    const previousFileId = formData.get('previousFileId') as string | null;
 
     // Validate file exists
     if (!file) {
@@ -36,7 +37,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<FileUploa
       );
     }
 
-    // Save file
+    // Delete previous file if it exists (cleanup)
+    if (previousFileId) {
+      await deleteFileById(previousFileId);
+    }
+
+    // Save new file
     const uploadedFile = await saveFile(file);
 
     // Return success response
@@ -69,4 +75,45 @@ export async function GET(): Promise<NextResponse> {
     maxFileSize: process.env.MAX_FILE_SIZE || 10485760,
     allowedTypes: (process.env.ALLOWED_FILE_TYPES || 'text/csv,application/vnd.ms-excel').split(','),
   });
+}
+
+/**
+ * DELETE /api/upload
+ * Deletes a file by its ID
+ */
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  try {
+    const { searchParams } = new URL(request.url);
+    const fileId = searchParams.get('fileId');
+
+    if (!fileId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'File ID is required',
+        },
+        { status: 400 }
+      );
+    }
+
+    await deleteFileById(fileId);
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'File deleted successfully',
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    const { message, status } = handleApiError(error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: message,
+      },
+      { status }
+    );
+  }
 }

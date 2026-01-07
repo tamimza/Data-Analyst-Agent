@@ -14,6 +14,23 @@ export default function Home() {
     setError(null);
   };
 
+  const handleFileRemoved = async () => {
+    // Delete file from server if it exists
+    if (uploadedFile) {
+      try {
+        await fetch(`/api/upload?fileId=${uploadedFile.id}`, {
+          method: 'DELETE',
+        });
+      } catch (error) {
+        console.error('Failed to delete file:', error);
+        // Don't show error to user - just log it
+      }
+    }
+
+    setUploadedFile(null);
+    setError(null);
+  };
+
   const handleError = (errorMessage: string) => {
     setError(errorMessage);
   };
@@ -61,6 +78,7 @@ export default function Home() {
           <ChatInterface
             uploadedFile={uploadedFile}
             onFileUploaded={handleFileUploaded}
+            onFileRemoved={handleFileRemoved}
             onError={handleError}
           />
         </div>

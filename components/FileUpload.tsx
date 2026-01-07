@@ -5,28 +5,35 @@ import { UploadedFile } from '@/types/file';
 import { formatFileSize } from '@/lib/utils';
 
 interface FileUploadProps {
+  uploadedFile: UploadedFile | null;
   onFileUploaded: (file: UploadedFile) => void;
+  onFileRemoved: () => void;
   onError: (error: string) => void;
 }
 
-export default function FileUpload({ onFileUploaded, onError }: FileUploadProps) {
+export default function FileUpload({ uploadedFile, onFileUploaded, onFileRemoved, onError }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       await uploadFile(files[0]);
     }
+    // Reset input value to allow re-uploading the same file
+    e.target.value = '';
   }, []);
 
   const uploadFile = async (file: File) => {
     setIsUploading(true);
-    setUploadedFile(null);
 
     try {
       const formData = new FormData();
       formData.append('file', file);
+
+      // Send current file ID if exists, so backend can clean it up
+      if (uploadedFile) {
+        formData.append('previousFileId', uploadedFile.id);
+      }
 
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -36,7 +43,6 @@ export default function FileUpload({ onFileUploaded, onError }: FileUploadProps)
       const data = await response.json();
 
       if (data.success && data.file) {
-        setUploadedFile(data.file);
         onFileUploaded(data.file);
       } else {
         onError(data.error || 'Failed to upload file');
@@ -93,7 +99,7 @@ export default function FileUpload({ onFileUploaded, onError }: FileUploadProps)
             <p className="text-xs text-green-600">{formatFileSize(uploadedFile.size)}</p>
           </div>
           <button
-            onClick={() => setUploadedFile(null)}
+            onClick={onFileRemoved}
             className="flex-shrink-0 text-red-600 hover:text-red-800"
             title="Remove file"
           >

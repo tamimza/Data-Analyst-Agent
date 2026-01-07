@@ -11,10 +11,11 @@ import { v4 as uuidv4 } from 'uuid';
 interface ChatInterfaceProps {
   uploadedFile: UploadedFile | null;
   onFileUploaded: (file: UploadedFile) => void;
+  onFileRemoved: () => void;
   onError: (error: string) => void;
 }
 
-export default function ChatInterface({ uploadedFile, onFileUploaded, onError }: ChatInterfaceProps) {
+export default function ChatInterface({ uploadedFile, onFileUploaded, onFileRemoved, onError }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +28,12 @@ export default function ChatInterface({ uploadedFile, onFileUploaded, onError }:
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Clear messages when file changes or is removed
+  useEffect(() => {
+    setMessages([]);
+    setError(null);
+  }, [uploadedFile?.id]);
 
   const handleSendMessage = async (question: string) => {
     if (!uploadedFile) {
@@ -102,7 +109,12 @@ export default function ChatInterface({ uploadedFile, onFileUploaded, onError }:
 
       <div className="flex items-start gap-2">
         <div className="flex-shrink-0">
-          <FileUpload onFileUploaded={onFileUploaded} onError={onError} />
+          <FileUpload
+            uploadedFile={uploadedFile}
+            onFileUploaded={onFileUploaded}
+            onFileRemoved={onFileRemoved}
+            onError={onError}
+          />
         </div>
         <div className="flex-1">
           <QuestionInput
