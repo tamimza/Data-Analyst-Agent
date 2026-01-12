@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import FileUpload from "@/components/FileUpload";
+import Link from "next/link";
 import ChatInterface from "@/components/ChatInterface";
 import { UploadedFile } from "@/types/file";
 
@@ -40,9 +40,20 @@ export default function Home() {
       <div className="max-w-5xl mx-auto">
         {/* Compact Header */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            AI Data Analysis
-          </h1>
+          <div className="flex items-center justify-center gap-4 mb-1">
+            <h1 className="text-3xl font-bold text-gray-900">
+              AI Data Analysis
+            </h1>
+            <Link
+              href="/docs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Docs
+            </Link>
+          </div>
           <p className="text-sm text-gray-600">Upload CSV and ask questions</p>
         </div>
 
